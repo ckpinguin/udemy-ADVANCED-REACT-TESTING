@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Show, ShowWithoutAvailableSeatCount } from '../../../shared/types';
+import { Show, ShowWithoutAvailableSeatCount } from '../../../../shared/types';
 import { venueCapacity } from '../../db/constants';
 import {
   filenames,
@@ -16,8 +16,9 @@ export async function writeShows(
 }
 
 export async function getShows(): Promise<Show[]> {
-  const showsMinusAvailableSeatCount =
-    await getJSONfromFile<ShowWithoutAvailableSeatCount>(filenames.shows);
+  const showsMinusAvailableSeatCount = await getJSONfromFile<ShowWithoutAvailableSeatCount>(
+    filenames.shows,
+  );
   const availableSeatCountByShowId = await getAvailableSeatCountByShowId();
 
   const fullDataShows = showsMinusAvailableSeatCount.map((show) => {

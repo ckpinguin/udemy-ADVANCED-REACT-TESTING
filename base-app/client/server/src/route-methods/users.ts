@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { User } from '../../../shared/types';
+import { User } from '../../../../shared/types';
 import { AuthUser, createJWT, hashPassword, passwordIsValid } from '../auth';
 import {
   addUser,

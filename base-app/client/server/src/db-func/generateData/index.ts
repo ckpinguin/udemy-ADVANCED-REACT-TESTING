@@ -9,7 +9,7 @@ import {
   Band,
   Image,
   ShowWithoutAvailableSeatCount,
-} from '../../../../shared/types';
+} from '../../../../../shared/types';
 import {
   adjectives,
   bandImages,

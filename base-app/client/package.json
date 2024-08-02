@@ -63,7 +63,7 @@
     "@types/react-router": "^5.1.16",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
-    "eslint": "^7.31.0",
+    "eslint": "^7.32.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-config-react": "^1.1.7",
@@ -76,8 +76,8 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "eslint-plugin-testing-library": "^3.10.2",
     "msw": "^0.33.3",
-    "prettier": "^2.3.2",
+    "prettier": "^2.8.8",
     "redux-saga-test-plan": "^4.0.3",
-    "typescript": "^4.3.5"
+    "typescript": "4.4"
   }
 }

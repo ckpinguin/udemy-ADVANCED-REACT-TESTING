@@ -14,6 +14,11 @@ import {
   startSignIn,
 } from "./authSlice";
 
+// Type guard to check if the error is an instance of Error
+function isError(error: unknown): error is Error {
+  return error instanceof Error;
+}
+
 export function* authenticateUser(payload: SignInDetails): SagaIterator {
   try {
     yield put(startSignIn());
@@ -27,12 +32,14 @@ export function* authenticateUser(payload: SignInDetails): SagaIterator {
     );
   } catch (error) {
     const action = payload.action === "signIn" ? "in" : "up";
-    yield put(
-      showToast({
-        title: `Sign ${action} failed: ${error.message}`,
-        status: "warning",
-      })
-    );
+    if (isError(error)) {
+      yield put(
+        showToast({
+          title: `Sign ${action} failed: ${error.message}`,
+          status: "warning",
+        })
+      );
+    }
   } finally {
     if (yield cancelled()) {
       yield put(showToast({ title: "Sign in canceled", status: "warning" }));

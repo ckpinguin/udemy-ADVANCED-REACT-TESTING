@@ -13,7 +13,7 @@ import {
   Band,
   Reservation,
   ShowWithoutAvailableSeatCount,
-} from '../../../shared/types';
+} from '../../../../shared/types';
 import { AuthUser } from '../auth';
 
 type JsonDataType =

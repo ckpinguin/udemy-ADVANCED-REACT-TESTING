@@ -1,4 +1,4 @@
-import { Reservation } from '../../../shared/types';
+import { Reservation } from '../../../../shared/types';
 import { venueCapacity } from '../../db/constants';
 import {
   deleteItem,

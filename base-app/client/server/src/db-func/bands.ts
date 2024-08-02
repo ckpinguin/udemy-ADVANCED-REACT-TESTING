@@ -1,4 +1,4 @@
-import { Band } from '../../../shared/types';
+import { Band } from '../../../../shared/types';
 import {
   filenames,
   getItemById,

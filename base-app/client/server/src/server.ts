@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import express, { json } from 'express';
 import jwt from 'express-jwt';
 
-import { User as UserType } from '../../shared/types';
+import { User as UserType } from '../../../shared/types';
 import { generateData } from './db-func/generateData/index';
 import { validateUser } from './middlewares/index';
 import bandRoutes from './route-methods/bands';

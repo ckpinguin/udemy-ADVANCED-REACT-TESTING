@@ -1,6 +1,6 @@
-import { PayloadAction } from "@reduxjs/toolkit";
-import axios, { CancelTokenSource } from "axios";
-import { SagaIterator } from "redux-saga";
+import { PayloadAction } from "@reduxjs/toolkit"
+import axios, { CancelTokenSource } from "axios"
+import { SagaIterator } from "redux-saga"
 import {
   call,
   cancel,
@@ -10,17 +10,17 @@ import {
   select,
   take,
   takeEvery,
-} from "redux-saga/effects";
+} from "redux-saga/effects"
 
-import { HoldReservation } from "../../../../../shared/types";
-import { showToast } from "../../toast/redux/toastSlice";
-import { ToastOptions } from "../../toast/types";
+import { HoldReservation } from "../../../../../shared/types"
+import { showToast } from "../../toast/redux/toastSlice"
+import { ToastOptions } from "../../toast/types"
 import {
   cancelPurchaseServerCall,
   releaseServerCall,
   reserveTicketServerCall,
-} from "../api";
-import { TicketAction } from "../types";
+} from "../api"
+import { TicketAction } from "../types"
 import {
   endTransaction,
   holdTickets,
@@ -31,7 +31,12 @@ import {
   startTicketAbort,
   startTicketPurchase,
   startTicketRelease,
-} from "./ticketSlice";
+} from "./ticketSlice"
+
+// Type guard to check if the error is an instance of Error
+function isError(error: unknown): error is Error {
+  return error instanceof Error
+}
 
 export function generateErrorToastOptions(
   error: string,
@@ -39,25 +44,25 @@ export function generateErrorToastOptions(
 ): ToastOptions {
   const titleIntro = ticketAction
     ? `Could not ${ticketAction} tickets`
-    : "Ticket error";
+    : "Ticket error"
   return {
     title: `${titleIntro}: ${error}`,
     status: "error",
-  };
+  }
 }
 
 // cancel or abort after hold but before purchase has been initiated
 function* releaseTickets(payload: ReleasePayload): SagaIterator {
-  const { reservation, reason } = payload;
-  yield put(showToast({ title: reason, status: "warning" }));
-  yield call(cancelTransaction, reservation);
+  const { reservation, reason } = payload
+  yield put(showToast({ title: reason, status: "warning" }))
+  yield call(cancelTransaction, reservation)
 }
 
 export function* cancelTransaction(
   holdReservation: HoldReservation
 ): SagaIterator {
-  yield call(releaseServerCall, holdReservation);
-  yield put(resetTransaction());
+  yield call(releaseServerCall, holdReservation)
+  yield put(resetTransaction())
 }
 
 // after puchase has been initiated
@@ -65,7 +70,7 @@ export function* purchaseTickets(
   payload: PurchasePayload,
   cancelSource: CancelTokenSource
 ): SagaIterator {
-  const { purchaseReservation, holdReservation } = payload;
+  const { purchaseReservation, holdReservation } = payload
   try {
     const { abort, purchaseResult } = yield race({
       purchaseResult: call(
@@ -74,34 +79,34 @@ export function* purchaseTickets(
         cancelSource.token
       ),
       abort: take(startTicketAbort.type),
-    });
+    })
     if (abort) {
-      yield call(cancelSource.cancel);
-      yield cancel();
+      yield call(cancelSource.cancel)
+      yield cancel()
     } else if (purchaseResult) {
       // result will only be truthy if there was an error
-      const ticketAction = yield select(selectors.getTicketAction);
+      const ticketAction = yield select(selectors.getTicketAction)
       const errorToastOptions = yield call(
         generateErrorToastOptions,
         purchaseResult,
         ticketAction
-      );
-      yield put(showToast(errorToastOptions));
-      yield call(cancelTransaction, holdReservation);
+      )
+      yield put(showToast(errorToastOptions))
+      yield call(cancelTransaction, holdReservation)
     } else {
-      yield put(showToast({ title: "tickets purchased", status: "success" }));
+      yield put(showToast({ title: "tickets purchased", status: "success" }))
     }
   } catch (e) {
-    yield call(cancelPurchaseServerCall, purchaseReservation);
-    throw e;
+    yield call(cancelPurchaseServerCall, purchaseReservation)
+    throw e
   } finally {
     if (yield cancelled()) {
-      yield call(cancelPurchaseServerCall, purchaseReservation);
-      yield put(showToast({ title: "purchase canceled", status: "warning" }));
-      yield call(cancelTransaction, holdReservation);
+      yield call(cancelPurchaseServerCall, purchaseReservation)
+      yield put(showToast({ title: "purchase canceled", status: "warning" }))
+      yield call(cancelTransaction, holdReservation)
     } else {
-      yield call(releaseServerCall, holdReservation);
-      yield put(endTransaction());
+      yield call(releaseServerCall, holdReservation)
+      yield put(endTransaction())
     }
   }
 }
@@ -111,28 +116,30 @@ export function* ticketFlow({
   payload: holdPayload,
 }: PayloadAction<HoldReservation>): SagaIterator {
   try {
-    yield call(reserveTicketServerCall, holdPayload);
+    yield call(reserveTicketServerCall, holdPayload)
     const nextAction = yield take([
       startTicketRelease.type, // hold expiration or cancel button
       startTicketAbort.type, // navigate away from page
       startTicketPurchase.type, // confirm button
-    ]);
+    ])
     if (nextAction.type === startTicketPurchase.type) {
-      const cancelSource = axios.CancelToken.source();
-      yield call(purchaseTickets, nextAction.payload, cancelSource);
+      const cancelSource = axios.CancelToken.source()
+      yield call(purchaseTickets, nextAction.payload, cancelSource)
     } else {
-      yield call(releaseTickets, nextAction.payload);
+      yield call(releaseTickets, nextAction.payload)
     }
   } catch (error) {
-    const ticketAction = yield select(selectors.getTicketAction);
-    yield put(
-      showToast(generateErrorToastOptions(error.message, ticketAction))
-    );
+    const ticketAction = yield select(selectors.getTicketAction)
+    if (isError(error)) {
+      yield put(
+        showToast(generateErrorToastOptions(error.message, ticketAction))
+      )
+    }
 
-    yield call(cancelTransaction, holdPayload);
+    yield call(cancelTransaction, holdPayload)
   }
 }
 
 export function* watchTicketHolds(): SagaIterator {
-  yield takeEvery(holdTickets.type, ticketFlow);
+  yield takeEvery(holdTickets.type, ticketFlow)
 }
