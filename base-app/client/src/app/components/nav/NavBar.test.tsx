@@ -2,23 +2,45 @@ import { App } from "../../../App"
 import { fireEvent, render, screen } from "../../../test-utils"
 import { NavBar } from "./NavBar"
 
-test("clicking sign-in button pushes /signin to history", () => {
-  const { history } = render(<NavBar />)
+describe("sign-in button navigation", () => {
+  test("clicking sign-in button pushes /signin to history", () => {
+    const { history } = render(<NavBar />)
 
-  const signInButton = screen.getByRole("button", { name: /sign in/i })
-  fireEvent.click(signInButton)
+    const signInButton = screen.getByRole("button", { name: /sign in/i })
+    fireEvent.click(signInButton)
 
-  expect(history.location.pathname).toBe("/signin")
+    expect(history.location.pathname).toBe("/signin")
+  })
+  // Behavior test
+  test("clicking sign-in button shows sign-in page", () => {
+    render(<App />)
+
+    const signInButton = screen.getByRole("button", { name: /sign in/i })
+    fireEvent.click(signInButton)
+
+    expect(
+      screen.getByRole("heading", { name: /Sign in to your account/i })
+    ).toBeInTheDocument()
+  })
 })
 
-// Behaviour test
-test("clicking sign-in button shows sign-in page", () => {
-  render(<App />)
+describe("display when signed in / not signed in", () => {
+  // Behavior test
+  test("display sign-in button when user is falsy", () => {
+    render(<NavBar />)
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeInTheDocument()
+  })
 
-  const signInButton = screen.getByRole("button", { name: /sign in/i })
-  fireEvent.click(signInButton)
+  test("display sign-out button when user is truthy", () => {
+    const userDetails = {
+      email: "test@test.com",
+    }
 
-  expect(
-    screen.getByRole("heading", { name: /Sign in to your account/i })
-  ).toBeInTheDocument()
+    render(<NavBar />, { preloadedState: { user: { userDetails } } })
+
+    expect(
+      screen.getByRole("button", { name: /sign out/i })
+    ).toBeInTheDocument()
+    expect(screen.getByText(/test@test.com/)).toBeInTheDocument()
+  })
 })
