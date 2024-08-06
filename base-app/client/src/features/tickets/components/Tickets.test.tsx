@@ -26,3 +26,12 @@ test('"purchase" button pushes the correct URL', async () => {
   const searchRegex = expect.stringMatching(/holdId=\d+&seatCount=2/)
   expect(history.location.search).toEqual(searchRegex)
 })
+
+test("redirects to /tickets/:showId if seatCount is missing", () => {
+  const { history } = render(<App />, {
+    preloadedState: { user: { userDetails: { email: "test@test.com" } } },
+    routeHistory: ["/confirm/0/?holdId=12345"],
+  })
+
+  expect(history.location.pathname).toBe("/tickets/0")
+})
