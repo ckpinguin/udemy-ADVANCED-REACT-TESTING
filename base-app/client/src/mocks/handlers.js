@@ -17,4 +17,7 @@ export const handlers = [
     const { showId } = req.params
     return res(ctx.json({ show: shows[showId] }))
   }),
+  rest.patch(`${showsUrl}/:showId/hold/:holdId`, (req, res, ctx) => {
+    return res(ctx.status(200))
+  }),
 ]
