@@ -55,34 +55,69 @@ const signInFailure = (
   res: ResponseComposition<any>,
   ctx: RestContext
 ) => res(ctx.status(401))
+const serverError = (
+  req: RestRequest<DefaultRequestBody, RequestParams>,
+  res: ResponseComposition<any>,
+  ctx: RestContext
+) => res(ctx.status(500))
+const signUpFailure = (
+  req: RestRequest<DefaultRequestBody, RequestParams>,
+  res: ResponseComposition<any>,
+  ctx: RestContext
+) => res(ctx.status(400), ctx.json({ message: "Email is already in use" }))
 
-test("unsuccessful signin followed by successful signin", async () => {
-  const errorHandler = rest.post(
-    `${baseUrl}/${endpoints.signIn}`,
-    signInFailure
-  )
-  server.resetHandlers(...handlers, errorHandler)
+test.each([
+  {
+    endpoint: endpoints.signIn,
+    outcome: "auth failure",
+    responseResolver: signInFailure,
+    buttonNameRegex: /sign in/i,
+  },
+  {
+    endpoint: endpoints.signIn,
+    outcome: "signin server error",
+    responseResolver: serverError,
+    buttonNameRegex: /sign in/i,
+  },
+  {
+    endpoint: endpoints.signUp,
+    outcome: "signup failure",
+    responseResolver: signUpFailure,
+    buttonNameRegex: /sign up/i,
+  },
+  {
+    endpoint: endpoints.signUp,
+    outcome: "signup server error",
+    responseResolver: serverError,
+    buttonNameRegex: /sign up/i,
+  },
+])(
+  "$endpoint $outcome followed by success",
+  async ({ responseResolver, endpoint, buttonNameRegex }) => {
+    const errorHandler = rest.post(`${baseUrl}/${endpoint}`, responseResolver)
+    server.resetHandlers(errorHandler)
 
-  const { history } = render(<App />, { routeHistory: ["/tickets/1"] })
+    const { history } = render(<App />, { routeHistory: ["/tickets/1"] })
 
-  const emailField = screen.getByLabelText(/email/i)
-  userEvent.type(emailField, "booking@test.com")
+    const emailField = screen.getByLabelText(/email/i)
+    userEvent.type(emailField, "booking@test.com")
 
-  const passwordField = screen.getByLabelText(/password/i)
-  userEvent.type(passwordField, "cheese123")
+    const passwordField = screen.getByLabelText(/password/i)
+    userEvent.type(passwordField, "cheese123")
 
-  const signInFOrm = screen.getByTestId("sign-in-form")
-  const signInBtn = getByRole(signInFOrm, "button", { name: /sign in/i })
-  userEvent.click(signInBtn)
+    const actionForm = screen.getByTestId("sign-in-form")
+    const actionBtn = getByRole(actionForm, "button", { name: buttonNameRegex })
+    userEvent.click(actionBtn)
 
-  // Reset to standard OK mock responses
-  server.resetHandlers()
+    // Reset to standard OK mock responses
+    server.resetHandlers()
 
-  // Try to login again, this time it should be successful
-  userEvent.click(signInBtn)
+    // Try to login again, this time it should be successful
+    userEvent.click(actionBtn)
 
-  await waitFor(() => {
-    expect(history.location.pathname).toBe("/tickets/1")
-    expect(history.entries).toHaveLength(1)
-  })
-})
+    await waitFor(() => {
+      expect(history.location.pathname).toBe("/tickets/1")
+      expect(history.entries).toHaveLength(1)
+    })
+  }
+)
