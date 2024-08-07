@@ -90,7 +90,7 @@ test.each([
     buttonNameRegex: /sign up/i,
   },
 ])(
-  "$# followed by success",
+  "$outcome on $endpoint followed by success",
   async ({ responseResolver, endpoint, buttonNameRegex }) => {
     const errorHandler = rest.post(`${baseUrl}/${endpoint}`, responseResolver)
     server.resetHandlers(errorHandler)
