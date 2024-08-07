@@ -3,7 +3,6 @@ import { App } from "../../../App"
 import { render, getByRole, screen, waitFor } from "../../../test-utils"
 import { baseUrl, endpoints } from "../../../app/axios/constants"
 import { server } from "../../../mocks/server"
-import { handlers } from "../../../mocks/handlers"
 import {
   DefaultRequestBody,
   RequestParams,
@@ -12,7 +11,6 @@ import {
   RestContext,
   RestRequest,
 } from "msw"
-import { sign } from "crypto"
 
 test.each([
   { routeName: "Profile", routePath: "/profile" },
